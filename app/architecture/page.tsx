@@ -341,7 +341,7 @@ export default function ArchitecturePage() {
                 
                 <line x1="385" y1="135" x2="555" y2="135" stroke="rgba(255,255,255,0.1)" />
                 <text x="385" y="152" fill="#fecaca" fontSize="9" fontFamily="monospace">• Video Scene Reasoning</text>
-                <text x="385" y="167" fill="#fecaca" fontSize="9" fontFamily="monospace">• Veo 3.1 Proxy Synthesis</text>
+                <text x="385" y="167" fill="#fecaca" fontSize="9" fontFamily="monospace">• Google Imagen &amp; Lyria 3</text>
                 <text x="385" y="182" fill="#fecaca" fontSize="9" fontFamily="monospace">• Autonomous Revision</text>
               </g>
 
@@ -362,9 +362,9 @@ export default function ArchitecturePage() {
                 <text x="775" y="122" fill="#d8b4fe" fontSize="10" fontFamily="monospace">Multi-Format Pipeline</text>
                 
                 <line x1="735" y1="135" x2="905" y2="135" stroke="rgba(255,255,255,0.1)" />
-                <text x="735" y="152" fill="#e9d5ff" fontSize="9" fontFamily="monospace">• 16:9 Theatrical (4K MP4)</text>
+                <text x="735" y="152" fill="#e9d5ff" fontSize="9" fontFamily="monospace">• 16:9 Theatrical (Lyria Audio)</text>
                 <text x="735" y="167" fill="#e9d5ff" fontSize="9" fontFamily="monospace">• 9:16 Vertical (Captions)</text>
-                <text x="735" y="182" fill="#e9d5ff" fontSize="9" fontFamily="monospace">• 4:5 Keyframe Poster Still</text>
+                <text x="735" y="182" fill="#e9d5ff" fontSize="9" fontFamily="monospace">• 4:5 Poster (Imagen Art)</text>
               </g>
 
               {/* NODE 4: ClickHouse Core (HERO-TECH CENTER STAGE) */}
@@ -390,13 +390,13 @@ export default function ArchitecturePage() {
 
                 <line x1="310" y1="385" x2="630" y2="385" stroke="rgba(255,255,255,0.15)" />
                 <text x="310" y="403" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
-                  • 4,557,605,031 Real YouTube Rows Scanned (&lt; 400ms)
+                  • 4,557,605,031 Real YouTube Rows Scanned (&lt; 2s)
                 </text>
                 <text x="310" y="420" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
-                  • 44,000+ Theatrical Trailers Benchmark (p90 2.91%)
+                  • campaign_rollup MV (AggregatingMergeTree, zero raw scans)
                 </text>
                 <text x="310" y="437" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
-                  • campaign_events MergeTree Telemetry &amp; Revision Loop
+                  • windowFunnel Monotonic Viewer Conversion Analytics
                 </text>
               </g>
 
