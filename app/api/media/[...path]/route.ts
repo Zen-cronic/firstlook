@@ -14,7 +14,9 @@ export async function GET(
   const filePath = path.join(storageDir, ...pathSegments);
 
   if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-    return new NextResponse("File Not Found", { status: 404 });
+    const bucketName = process.env.GCS_BUCKET_NAME || "agentic-cinema-2026-media";
+    const gcsUrl = `https://storage.googleapis.com/${bucketName}/${pathSegments.join("/")}`;
+    return NextResponse.redirect(gcsUrl, 307);
   }
 
   const fileStream = fs.createReadStream(filePath);

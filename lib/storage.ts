@@ -51,24 +51,81 @@ export function getGCSClient(): Storage | null {
   return null;
 }
 
+export function getContentType(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".mp3": "audio/mpeg",
+    ".json": "application/json",
+    ".txt": "text/plain",
+  };
+  return mimeTypes[ext] || "application/octet-stream";
+}
+
 export async function uploadToGCS(localFilePath: string, destinationName: string): Promise<string | null> {
-  const bucketName = process.env.GCS_BUCKET_NAME;
+  const bucketName = process.env.GCS_BUCKET_NAME || "agentic-cinema-2026-media";
+  const contentType = getContentType(localFilePath);
+
+  // 1. Try official @google-cloud/storage (works on Cloud Run via Compute Engine service account / ADC)
   const storage = getGCSClient();
-  
-  if (!storage || !bucketName) {
-    return null; // Fallback to local storage path
+  if (storage) {
+    try {
+      const bucket = storage.bucket(bucketName);
+      await bucket.upload(localFilePath, {
+        destination: destinationName,
+        resumable: false,
+        metadata: {
+          contentType,
+        },
+      });
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${destinationName}`;
+      console.log(`[Storage] Uploaded to GCS via SDK: ${publicUrl}`);
+      return publicUrl;
+    } catch (err: any) {
+      console.warn(`[Storage] GCS SDK upload fallback notice: ${err?.message || err}`);
+    }
   }
 
+  // 2. Resilient fallback for local / CLI execution using gcloud access token
   try {
-    const bucket = storage.bucket(bucketName);
-    await bucket.upload(localFilePath, {
-      destination: destinationName,
-      resumable: false,
-    });
-    console.log(`Uploaded ${localFilePath} to Google Cloud Storage: gs://${bucketName}/${destinationName}`);
-    return `https://storage.googleapis.com/${bucketName}/${destinationName}`;
-  } catch (err) {
-    console.error("GCS upload error:", err);
-    return null;
+    const { execSync } = await import("node:child_process");
+    let token = process.env.GOOGLE_ACCESS_TOKEN;
+    if (!token) {
+      try {
+        token = execSync("gcloud auth print-access-token", { encoding: "utf-8" }).trim();
+      } catch {
+        // No gcloud token available
+      }
+    }
+
+    if (token) {
+      const fileBuffer = fs.readFileSync(localFilePath);
+      const url = `https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${encodeURIComponent(destinationName)}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": contentType,
+        },
+        body: fileBuffer,
+      });
+
+      if (res.ok) {
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/${destinationName}`;
+        console.log(`[Storage] Uploaded to GCS via REST: ${publicUrl}`);
+        return publicUrl;
+      } else {
+        const errText = await res.text();
+        console.warn(`[Storage] GCS REST upload response (${res.status}):`, errText);
+      }
+    }
+  } catch (fallbackErr: any) {
+    console.warn(`[Storage] GCS fallback error:`, fallbackErr?.message || fallbackErr);
   }
+
+  return null;
 }

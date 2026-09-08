@@ -46,6 +46,8 @@ export async function ensureStaticServer(): Promise<string> {
 
       if (reqUrl.startsWith("/storage/")) {
         filePath = path.join(storageDir, reqUrl.replace("/storage/", ""));
+      } else if (reqUrl.startsWith("/api/media/")) {
+        filePath = path.join(storageDir, reqUrl.replace("/api/media/", ""));
       } else {
         filePath = path.join(publicDir, reqUrl);
       }

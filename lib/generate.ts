@@ -1,7 +1,10 @@
 import { getDb, Brief, Asset } from "./db";
 import { createCampaignPlan } from "./campaign-plan";
 import { getRenderPath } from "./storage";
+import { generateConceptArt } from "./imagen";
+import { generateMusicBed } from "./lyria";
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 
 export async function generateCampaignVersion(briefId: string): Promise<string> {
   const db = getDb();
@@ -46,7 +49,44 @@ export async function generateCampaignVersion(briefId: string): Promise<string> 
     isProxy: false,
   }));
 
-  const posterPath = posterAssets[0] ? `/storage/uploads/${posterAssets[0].file_path}` : "";
+  // Resolve poster image: use uploaded poster if present, otherwise generate cinematic concept art proxy
+  let posterPath = posterAssets[0] ? `/storage/uploads/${posterAssets[0].file_path}` : "";
+  let isPosterProxy = !posterAssets[0];
+
+  if (!posterPath) {
+    try {
+      const artOutputPath = getRenderPath(briefId, `version_${versionNumber}_concept_art.jpg`);
+      const generatedArt = await generateConceptArt({
+        title: brief.title,
+        logline: brief.logline,
+        genre: brief.genre,
+        targetAudience: brief.target_audience,
+        outputPath: artOutputPath,
+      });
+      if (generatedArt) {
+        posterPath = `/storage/renders/${briefId}/${path.basename(artOutputPath)}`;
+        isPosterProxy = true;
+      }
+    } catch (artErr) {
+      console.warn("[Generate] Concept art generation note:", artErr);
+    }
+  }
+
+  // Resolve audio soundtrack: generate Lyria 3 music bed for teaser trailers
+  let audioPath: string | undefined = undefined;
+  try {
+    const musicOutputPath = getRenderPath(briefId, `version_${versionNumber}_music.mp3`);
+    const generatedMusic = await generateMusicBed({
+      title: brief.title,
+      genre: brief.genre,
+      outputPath: musicOutputPath,
+    });
+    if (generatedMusic) {
+      audioPath = `/storage/renders/${briefId}/${path.basename(musicOutputPath)}`;
+    }
+  } catch (musicErr) {
+    console.warn("[Generate] Music generation note:", musicErr);
+  }
 
   // Queue Teaser render job (16:9)
   const teaserOutputPath = getRenderPath(briefId, `version_${versionNumber}_teaser.mp4`);
@@ -62,6 +102,7 @@ export async function generateCampaignVersion(briefId: string): Promise<string> 
       tagline: plan.tagline,
       clips: clipsProps,
       captions: plan.captions,
+      audioSrc: audioPath,
       teaserDurationInFrames: clipsProps.reduce((acc, c) => acc + c.durationInFrames, 0) || 300,
     }),
     teaserOutputPath
@@ -81,6 +122,7 @@ export async function generateCampaignVersion(briefId: string): Promise<string> 
       tagline: plan.tagline,
       clips: clipsProps,
       captions: plan.captions,
+      audioSrc: audioPath,
       teaserDurationInFrames: clipsProps.reduce((acc, c) => acc + c.durationInFrames, 0) || 300,
     }),
     verticalOutputPath
@@ -100,7 +142,7 @@ export async function generateCampaignVersion(briefId: string): Promise<string> 
       tagline: plan.tagline,
       imageSrc: posterPath,
       releaseDate: brief.release_date,
-      isProxy: posterPath ? false : true,
+      isProxy: isPosterProxy,
     }),
     posterOutputPath
   );
