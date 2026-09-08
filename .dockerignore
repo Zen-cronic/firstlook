@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+submission
+film
+*.mp4
+*.tsbuildinfo
+.env*.local

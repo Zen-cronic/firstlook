@@ -15,7 +15,12 @@
     "seed:sintel": "tsx scripts/seed-sintel.ts",
     "test:ch-mcp": "tsx scripts/test-ch-mcp.ts",
     "test:render": "tsx scripts/test-render.ts",
-    "test:e2e": "tsx scripts/e2e-test.ts"
+    "test:e2e": "tsx scripts/e2e-test.ts",
+    "film:narration": "tsx film/generate-narration.ts",
+    "film:plates": "tsx film/record-plates.ts",
+    "film:assemble": "tsx film/assemble-reel.ts",
+    "film:verify": "tsx film/verify-reel.ts",
+    "film:critique": "tsx film/analyze-video.ts"
   },
   "dependencies": {
     "@clickhouse/client": "^1.9.0",

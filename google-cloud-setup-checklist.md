@@ -11,7 +11,8 @@ _Current as of 2026-09-08. Project: `agentic-cinema-2026-kzh`; region: `us-centr
 | **Google Cloud Storage Bucket** | `gs://agentic-cinema-2026-media` (`us-central1`) | [GCS Buckets](https://console.cloud.google.com/storage/browser/agentic-cinema-2026-media?project=agentic-cinema-2026-kzh) |
 | **Vertex AI / Gemini 3.6 Flash & Veo 3.1** | `aiplatform.googleapis.com` (Enabled) | [Vertex AI](https://console.cloud.google.com/vertex-ai?project=agentic-cinema-2026-kzh) |
 | **Cloud Run API** | `run.googleapis.com` (Enabled) | [Cloud Run](https://console.cloud.google.com/run?project=agentic-cinema-2026-kzh) |
-| **Artifact Registry API** | `artifactregistry.googleapis.com` (Enabled) | [Artifact Registry](https://console.cloud.google.com/artifacts?project=agentic-cinema-2026-kzh) |
+| **Cloud Run Service (Production)** | `https://firstlook-web-933560214849.us-central1.run.app` | [Cloud Run Service Console](https://console.cloud.google.com/run/detail/us-central1/firstlook-web?project=agentic-cinema-2026-kzh) |
+| **Artifact Registry Image** | `us-central1-docker.pkg.dev/agentic-cinema-2026-kzh/firstlook/firstlook-web:latest` | [Artifact Registry Console](https://console.cloud.google.com/artifacts/docker/agentic-cinema-2026-kzh/us-central1/firstlook?project=agentic-cinema-2026-kzh) |
 | **Secret Manager API** | `secretmanager.googleapis.com` (Enabled) | [Secret Manager](https://console.cloud.google.com/security/secret-manager?project=agentic-cinema-2026-kzh) |
 
 ---
@@ -36,3 +37,6 @@ _Current as of 2026-09-08. Project: `agentic-cinema-2026-kzh`; region: `us-centr
 - [x] Local `@google-cloud/storage` SDK integration verified.
 - [x] Full local E2E verification suite (`npm run test:e2e`) passed.
 - [x] Production build (`npm run build`) succeeded in 2.9s.
+- [x] Cloud Build packaged image to Artifact Registry (`us-central1-docker.pkg.dev/agentic-cinema-2026-kzh/firstlook/firstlook-web:latest`).
+- [x] Cloud Run production service deployed and live: `https://firstlook-web-933560214849.us-central1.run.app`.
+- [x] Live Cloud Run ClickHouse MCP benchmark verified: 4,557,605,031 rows aggregated over HTTP/2.

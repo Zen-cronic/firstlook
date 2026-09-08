@@ -42,6 +42,7 @@ BUILD_CHECKPOINT.md
 # demo & submission docs (local-only / untracked)
 .playwright-mcp/
 submission/
+film/
 demo/
 video/
 *.mp4
