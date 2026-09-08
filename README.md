@@ -1,6 +1,6 @@
-# Agentic Cinema — Film Marketing Engine (ClickHouse Track)
+# FirstLook — Film Marketing Engine (ClickHouse Track)
 
-**Agentic Cinema** is a film-marketing agent that tests marketing campaign performance against real theatrical and streaming releases **before you spend a single dollar on ad campaigns**.
+**FirstLook** is a film-marketing agent that tests marketing campaign performance against real theatrical and streaming releases **before you spend a single dollar on ad campaigns**.
 
 Brief a film + release date → Gemini 3.6 Flash plans a campaign grounded strictly in the film's real assets → render a 16:9 teaser trailer, 9:16 vertical video, and 4:5 poster via Remotion with visual `GENERATED · PROXY` honesty labels → approve -> honest-state campaign calendar (`Published · SIM`) → **the load-bearing move: compare campaign engagement against real comparable releases using ClickHouse's public 4.56-billion-row `youtube` dataset via the official `mcp-clickhouse` MCP server**, and trigger an LLM revision loop reasoning against that real benchmark.
 

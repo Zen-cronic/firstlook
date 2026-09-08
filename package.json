@@ -1,9 +1,9 @@
 {
-  "name": "agentic-cinema",
+  "name": "firstlook",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Agentic Cinema — film-marketing agent testing campaigns against real releases using ClickHouse public YouTube benchmark data via mcp-clickhouse",
+  "description": "FirstLook — film-marketing agent testing campaigns against real releases using ClickHouse public YouTube benchmark data via mcp-clickhouse",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

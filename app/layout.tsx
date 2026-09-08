@@ -4,7 +4,7 @@ import { Film, Sparkles, Database, ShieldAlert } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Agentic Cinema — Film Marketing Engine",
+  title: "FirstLook — Film Marketing Engine",
   description: "Test campaign performance against real theatrical releases using ClickHouse's 4.56B-row YouTube benchmark via mcp-clickhouse",
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({
                 <Film className="w-5 h-5" />
               </div>
               <div>
-                <span className="font-extrabold text-lg tracking-tight uppercase">Agentic Cinema</span>
+                <span className="font-extrabold text-lg tracking-tight uppercase">FirstLook</span>
                 <span className="ml-2 text-[10px] font-mono bg-red-950/80 text-red-400 border border-red-800 px-2 py-0.5 rounded uppercase font-bold">
                   ClickHouse Track
                 </span>
