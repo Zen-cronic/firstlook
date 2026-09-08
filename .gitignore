@@ -35,6 +35,14 @@ data/*.sqlite
 *.tsbuildinfo
 next-env.d.ts
 
-.agents
+# agent skills & local checkpoints
+.agents/
+BUILD_CHECKPOINT.md
 
-BUILD_CHECKPOINT
+# demo & submission docs (local-only / untracked)
+.playwright-mcp/
+submission/
+demo/
+video/
+*.mp4
+*.webm
