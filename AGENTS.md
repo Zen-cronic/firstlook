@@ -30,14 +30,6 @@ preview-page A/B of two cuts with consenting viewers, events landing in ClickHou
 Why ClickHouse is necessary (put this in the README necessity table): the core claim needs a
 billion-row scan in seconds — non-substitutable OLAP that Postgres cannot do.
 
-## Reference architecture (read, then RE-IMPLEMENT — do not copy verbatim)
-
-`../reelkit/` is the **Claude-built reference** that de-risks every decision (render pipeline,
-the load-bearing benchmark, the honesty model, the real-film demo). **Read it as a design spec**
-and write fresh Gemini/Antigravity code here — do NOT copy its source into this submission (that
-would put non-Google-authored code in the entry). Key files to study: `lib/clickhouse.ts`
-(benchmark + events), `lib/generate.ts`, `lib/campaign-plan.ts`, `remotion/`, `app/`.
-
 ## Honesty (non-negotiable, on screen)
 
 Real footage is the teaser basis; every generated/Veo asset is labeled `GENERATED · PROXY`.
@@ -57,4 +49,3 @@ In `../../` (the suite hackathon dir `~/code/hackathons/hackathon-agent/hackatho
 `state.md`; `research/devpost-recon-2026-09-07.md` (rules/rubric/deadline T-2 2026-09-09 17:00 EDT),
 `research/judge-panel-2026-09-07.md` (what wins/loses), `research/synthesis-branchcut-marketing-2026-09-07.md`
 (the sharpened concept), `research/demo-run-of-show-2026-09-07.md`, and `submission/devpost-draft-handoff.md`.
-Read `HANDOFF.md` here for the build order.

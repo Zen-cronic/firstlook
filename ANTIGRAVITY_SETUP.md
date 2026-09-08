@@ -12,13 +12,12 @@
 |---|---|
 | `AGENTS.md` | Always-on build rules (concept, Section 7.B, ClickHouse-via-MCP, honesty, deliverables). Antigravity reads it natively. |
 | `GEMINI.md` | Antigravity-specific pointer → AGENTS.md + notes. |
-| `HANDOFF.md` | **The kickoff prompt + phased build order** (port the reference architecture). Start here. |
 | `.agents/skills/` | 34 hackathon method skills (design-direction, deploy, demo-director, submission-devpost, judge-panel, …) — invoke by name. |
 | `.agents/plugins/clickhouse-mcp/` | Auto-loading plugin wiring the official `mcp-clickhouse` (defaults to the public SQL Playground). |
 
 Discovery is anchored to the `.git` root, so **`git init` first** (also the public-repo deliverable):
 ```bash
-cd ~/code/hackathons/agentic-cinema-2026/placeholder   # rename to the project name once chosen
+cd ~/code/hackathons/agentic-cinema-2026/firstlook
 git init
 ```
 
@@ -76,9 +75,8 @@ The workspace is already trusted (`trustedWorkspaces` includes this dir), which 
 ## Start the build
 
 ```bash
-cd ~/code/hackathons/agentic-cinema-2026/placeholder
-agy            # then paste the Kickoff prompt from HANDOFF.md
-# or non-interactive: agy -p "$(sed -n '/Kickoff prompt/,/Read first/p' HANDOFF.md)"
+cd ~/code/hackathons/agentic-cinema-2026/firstlook
+npm run dev
 ```
 
 ## Notes

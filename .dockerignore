@@ -3,6 +3,8 @@ node_modules
 .git
 submission
 film
+demo
 *.mp4
 *.tsbuildinfo
 .env*.local
+.playwright-mcp/
