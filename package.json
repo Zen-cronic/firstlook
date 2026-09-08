@@ -1,0 +1,53 @@
+{
+  "name": "agentic-cinema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agentic Cinema — film-marketing agent testing campaigns against real releases using ClickHouse public YouTube benchmark data via mcp-clickhouse",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "studio": "remotion studio remotion/index.tsx",
+    "worker": "node --env-file-if-exists=.env --import tsx worker/index.ts",
+    "bundle": "remotion bundle remotion/index.tsx",
+    "typecheck": "tsc --noEmit",
+    "seed:sintel": "tsx scripts/seed-sintel.ts",
+    "test:ch-mcp": "tsx scripts/test-ch-mcp.ts",
+    "test:render": "tsx scripts/test-render.ts",
+    "test:e2e": "tsx scripts/e2e-test.ts"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.9.0",
+    "@google-cloud/storage": "^8.0.1",
+    "@google/genai": "^0.14.0",
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "@remotion/bundler": "4.0.512",
+    "@remotion/captions": "4.0.512",
+    "@remotion/cli": "4.0.512",
+    "@remotion/google-fonts": "4.0.512",
+    "@remotion/media": "4.0.512",
+    "@remotion/renderer": "4.0.512",
+    "@remotion/tailwind-v4": "4.0.512",
+    "@remotion/transitions": "4.0.512",
+    "@remotion/zod-types": "4.0.512",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "next": "^15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.512",
+    "tailwind-merge": "^3.0.1",
+    "tsx": "^4.19.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  }
+}
