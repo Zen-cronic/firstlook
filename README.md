@@ -10,16 +10,80 @@ Brief a film + release date → Gemini 3.6 Flash plans a campaign grounded stric
 
 This application **actively uses ClickHouse at runtime via the official `mcp-clickhouse` MCP server** (`run_query` tool calls), strictly complying with Stage-One rules and Section 7.B.
 
-```
-+--------------------------+       MCP stdio transport        +--------------------------------+
-|  Next.js / Node Backend  |  =============================>  |  mcp-clickhouse (run_query)    |
-| (Agentic Cinema Engine)  |  <=============================  |  (Official ClickHouse Server)  |
-+--------------------------+                                  +--------------------------------+
-                                                                             ||
-                                                                    +------------------+
-                                                                    | ClickHouse OLAP  |
-                                                                    | 4.56B youtube    |
-                                                                    +------------------+
+![FirstLook System Architecture](public/architecture-diagram.png)
+
+```mermaid
+flowchart TD
+    subgraph Studio["🎬 Studio Frontend (Next.js 15 App Router / React 19)"]
+        UI["Cockpit Dashboard<br/><i>Briefing · 4K Footage · Spoiler Rules</i>"]
+        Calendar["Campaign Calendar<br/><i>Published · SIM Multi-Platform Rollout</i>"]
+        RevisionUI["Feedback & Revision Loop<br/><i>Comparative Analysis</i>"]
+    end
+
+    subgraph GoogleAI["🤖 Google Multimodal Intelligence Engine"]
+        Gemini["Gemini 3.6 / 3.8 Flash Planner<br/><i>Multimodal Pacing & Strategy Synthesis</i>"]
+        Imagen["Google Imagen Concept Art<br/><i>gemini-2.5-flash-image (GENERATED · PROXY)</i>"]
+        Lyria["Google Lyria 3 Soundtrack<br/><i>Original Cinematic Score (MP3)</i>"]
+        TTS["Google Gemini TTS<br/><i>Voice Puck (Voiceover Narration)</i>"]
+    end
+
+    subgraph RemotionCluster["🎞️ Remotion 4 Media Synthesis Engine"]
+        Teaser["16:9 Theatrical Teaser<br/><i>Real Footage + Lyria Score</i>"]
+        Vertical["9:16 Kinetic Vertical<br/><i>Spring Motion Captions</i>"]
+        Poster["4:5 Studio Poster<br/><i>Imagen Hero Keyframe</i>"]
+    end
+
+    subgraph CloudInfra["☁️ Google Cloud Infrastructure"]
+        GCS[("Google Cloud Storage<br/>gs://agentic-cinema-2026-media")]
+        CloudRun["Cloud Run Serverless Container<br/><i>Continuous Deployment</i>"]
+    end
+
+    subgraph HeroTech["⚡ Hero-Tech Core: ClickHouse OLAP (Official mcp-clickhouse stdio Transport)"]
+        MCP["mcp-clickhouse Server<br/><i>stdio JSON-RPC 2.0</i><br/><b>Tool: run_query</b>"]
+        
+        subgraph ReadLeg["Read Leg (Public Playground)"]
+            PublicDB[("youtube.youtube<br/><b>4,557,605,031 Rows</b><br/><i>44,000+ Real Movie Trailers</i>")]
+            BenchmarkScan["OLAP Aggregations<br/><code>quantilesExactWeighted(0.5, 0.90)</code><br/><i>Sub-2s Scan</i>"]
+        end
+        
+        subgraph WriteLeg["Write Leg (ClickHouse Cloud Cluster)"]
+            PrivateDB[("campaign_events<br/><i>MergeTree (synthetic=1)</i>")]
+            RollupMV[("campaign_rollup_mv<br/><i>AggregatingMergeTree</i><br/>Zero Raw Table Scans")]
+            Funnel["Conversion Funnels<br/><code>windowFunnel(3600)</code>"]
+        end
+    end
+
+    %% Data Connections
+    UI -->|"Raw 4K footage & brief"| Gemini
+    Gemini -->|"Structured Campaign Plan JSON"| RemotionCluster
+    GoogleAI --> RemotionCluster
+    RemotionCluster -->|"Rendered Deliverables"| GCS
+    GCS -->|"CDN Stream Delivery"| Studio
+    
+    UI -->|"Benchmark Query"| MCP
+    MCP -->|"Sub-2s 4.56B Scan"| PublicDB
+    PublicDB --> BenchmarkScan
+    BenchmarkScan -->|"Median & p90 Ground Truth"| MCP
+    
+    Calendar -->|"Simulated Engagement Events"| MCP
+    MCP --> PrivateDB
+    PrivateDB --> RollupMV
+    RollupMV --> Funnel
+    
+    Funnel -->|"Conversion Telemetry"| MCP
+    MCP -->|"Comparative Telemetry & Real Benchmark"| Gemini
+    Gemini -->|"Adversarial LLM Strategy Revision"| RevisionUI
+    RevisionUI -->|"Approved Cut Update"| RemotionCluster
+
+    classDef google fill:#1e1e2e,stroke:#f87171,stroke-width:2px,color:#fff;
+    classDef clickhouse fill:#064e3b,stroke:#34d399,stroke-width:2.5px,color:#fff;
+    classDef media fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#fff;
+    classDef infra fill:#172554,stroke:#60a5fa,stroke-width:2px,color:#fff;
+    
+    class Gemini,Imagen,Lyria,TTS google;
+    class MCP,PublicDB,PrivateDB,BenchmarkScan,RollupMV,Funnel clickhouse;
+    class RemotionCluster,Teaser,Vertical,Poster media;
+    class GCS,CloudRun infra;
 ```
 
 ### ClickHouse Necessity Table
