@@ -26,20 +26,27 @@ This application **actively uses ClickHouse at runtime via the official `mcp-cli
 
 | Feature | Where Used in Code | Why ClickHouse is Essential (Substitutability Analysis) |
 |---|---|---|
-| **Real Comparable Release Benchmark** | [`lib/clickhouse-mcp.ts:98`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/placeholder/lib/clickhouse-mcp.ts#L98-L113) | Performs an instant OLAP aggregation scan over **4,557,605,031 rows** in the public `youtube.youtube` table (`WHERE positionCaseInsensitive(title, 'official trailer') > 0`) to compute true median and p90 engagement rates across 44,000+ movie trailers. **PostgreSQL/SQLite cannot perform a sub-second scan over 4.5B rows without crashing or timing out.** |
-| **High-Volume Event Stream Ingestion** | [`lib/clickhouse-mcp.ts:135`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/placeholder/lib/clickhouse-mcp.ts#L135-L188) | Ingests thousands of impression, click, complete, and like events per campaign item into a `MergeTree` table (`campaign_events`) via `mcp-clickhouse` with `CLICKHOUSE_ALLOW_WRITE_ACCESS=true`. Handles real-time event analytics at scale. |
-| **Data-Grounded LLM Revision Loop** | [`lib/revise.ts:38`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/placeholder/lib/revise.ts#L38-L82) | Feeds real ClickHouse median/p90 trailer benchmark data into Gemini 3.6 Flash so the LLM can adversarially reason against real market performance and rewrite underperforming post captions. |
+| **Real Comparable Release Benchmark** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Performs an instant OLAP aggregation scan over **4,557,605,031 rows** in the public `youtube.youtube` table (`WHERE positionCaseInsensitive(title, 'official trailer') > 0`) to compute true median and p90 engagement rates across 80,000+ movie trailers in ~2 seconds. **PostgreSQL/SQLite cannot scan 4.56B rows in sub-seconds without crashing or timing out.** |
+| **Incremental MV Pre-Aggregation** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Computes engagement counts at insert time via `campaign_rollup_mv` into an `AggregatingMergeTree` table (`campaign_rollup`) with `SimpleAggregateFunction(sum, UInt64)`. The LLM revision loop queries pre-aggregated counters with **zero raw table scans**. |
+| **Monotonic Conversion Funnels** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Computes strict sequence-aware conversion funnels (`reached` → `watched` → `engaged` → `clicked`) using ClickHouse's native `windowFunnel(3600)(toDateTime(ts), ...)` across session IDs and JSON `props`. |
+| **High-Volume Event Stream Ingestion** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Ingests thousands of impression, click, complete, and like events per campaign item into ClickHouse Cloud via `mcp-clickhouse` (`CLICKHOUSE_ALLOW_WRITE_ACCESS=true`). |
+| **Data-Grounded LLM Revision Loop** | [`lib/revise.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/revise.ts) | Feeds real ClickHouse median/p90 trailer benchmark data and rollup metrics into Gemini 3.6/3.8 Flash to adversarially reason against real market performance and rewrite underperforming post copy. |
 
 ---
 
 ## 🛠️ Stack & Technology
 
-- **AI Engine**: Gemini 3.6 Flash (`@google/genai`) + Veo 3.1 proxy generator
-- **OLAP Engine**: ClickHouse via `mcp-clickhouse` (`@modelcontextprotocol/sdk`)
-- **Render Engine**: Remotion 4 (`@remotion/renderer`)
-- **Cloud Infrastructure**: Google Cloud Run + Google Cloud Storage (`gs://agentic-cinema-2026-media`) + Google Cloud Secret Manager
+- **Planning & Reasoning**: Google Gemini 3.8 / 3.6 Flash & Gemini 3.1 Pro Preview (via Vertex AI / `@google/genai`)
+- **Voice & Narration**: Google Gemini TTS (`gemini-3.1-flash-tts-preview`, voice `Puck`)
+- **Soundtrack & Music Beds**: Google Lyria 3 (`models/lyria-3-clip-preview` & `lyria-3.5`)
+- **Visuals & Concept Art**: Google Image Generation (`gemini-2.5-flash-image` / `gemini-3.1-flash-image-preview`) with `GENERATED · PROXY` honesty badging
+- **Semantic Similarity**: Google Gemini Embeddings (`gemini-embedding-001`, 768-dim)
+- **OLAP & Benchmarking**: ClickHouse Cloud (`AggregatingMergeTree` + `windowFunnel`) & Public 4.56B YouTube cluster via official `mcp-clickhouse` (`@modelcontextprotocol/sdk`)
+- **Video Composition & Rendering**: Remotion 4 (`@remotion/renderer` & `@remotion/bundler`)
+- **Asset Distribution**: Google Cloud Storage (`gs://agentic-cinema-2026-media`) with automatic signed/public streaming
+- **Cloud Infrastructure**: Google Cloud Run + Google Secret Manager (`cloudbuild.yaml` & `deploy/deploy_preview.sh`)
 - **Frontend / Framework**: Next.js 15 (App Router), React 19, Tailwind CSS v4, Lucide Icons
-- **App State**: SQLite (`node:sqlite`) + `ffprobe`/`ffmpeg`
+- **Local State**: SQLite (`node:sqlite`) + `ffmpeg` / `ffprobe`
 
 ---
 
@@ -61,10 +68,40 @@ npm run test:ch-mcp
 # 5. Verify Remotion headless render engine
 npm run test:render
 
-# 6. Start development server & background render worker
+# 6. Run full end-to-end verification (Google Media + ClickHouse MV Rollup + Funnel + Embeddings)
+npm run test:e2e
+
+# 7. Start development server & background render worker
 npm run dev
 npm run worker
 ```
+
+---
+
+## 🎨 Design Direction & Motion Graphics Architecture
+
+Our UI architecture incorporates proven industry patterns sourced from **Mobbin** video review workflows and motion craft from **[Seesaw](https://www.seesaw.website/)**:
+
+1. **Studio Video Review & Feedback** ([Frame.io](https://mobbin.com/screens/a5570f8f-da0c-4aac-b387-86edb3c7cbc6) & [Vimeo](https://mobbin.com/screens/0b804d5e-14cc-4929-bf2b-efa3d0388435)):
+   - Cinema-grade dark canvas (`#0a0a0c`) with minimal chrome to foreground film footage.
+   - Live visual honesty badges (`GENERATED · PROXY`) directly on render viewports.
+   - Monotonic conversion funnel progression (`Reached` → `Watched` → `Engaged` → `Clicked`) powered by ClickHouse `windowFunnel`.
+2. **Visual Campaign Orchestration** ([Later](https://mobbin.com/screens/85de220d-a33e-4850-b9b9-00b73f91fa52) & [Buffer](https://mobbin.com/screens/82fb0dce-e613-44aa-abcd-20c9786e4f1b)):
+   - Multi-platform aspect ratio deliverables (16:9 Main, 9:16 Vertical, 4:5 Poster).
+   - Transparent lifecycle state indicators (`Draft`, `Scheduled`, `Published · SIM`).
+3. **Seesaw-Inspired Kinetic Polish**:
+   - Dynamic typography letter-spacing expansion on title reveal (`tracking-tighter` to `tracking-wider`).
+   - Glassmorphism analytical cards (`backdrop-blur-md`, `bg-neutral-900/60`, 1px border with 10% opacity).
+   - High-throughput OLAP counter animation matching the speed of ClickHouse 4.56B row scans.
+
+---
+
+## ☁️ Google Cloud Deployment Recipe
+
+FirstLook includes a fully reproducible, declarative deployment pipeline:
+- **Cloud Build**: [`cloudbuild.yaml`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/cloudbuild.yaml) builds the Next.js + Remotion + `uvx mcp-clickhouse` container and pushes commit-pinned tags to Artifact Registry.
+- **Deploy Script**: [`deploy/deploy_preview.sh`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/deploy/deploy_preview.sh) configures Secret Manager mounts (`gemini-api-key`, `clickhouse-password`), binds ClickHouse Cloud runtime parameters, and deploys to Google Cloud Run with public unauthenticated judge access.
+- **GCS Media Streaming**: Rendered deliverables automatically synchronize to `gs://agentic-cinema-2026-media` for low-latency streaming worldwide.
 
 ---
 

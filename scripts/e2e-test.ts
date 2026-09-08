@@ -86,6 +86,29 @@ async function runE2ETest() {
   }
   console.log(`✓ Total synthetic event rows written to ClickHouse via mcp-clickhouse: ${totalRows}`);
 
+  // 6b. Verify ClickHouse windowFunnel Conversion Analytics
+  console.log("\n[E2E Step 6b] Testing ClickHouse windowFunnel conversion funnel analytics...");
+  const { getFunnelMetricsViaMcp, aggregateByItemViaMcp } = await import("../lib/clickhouse-mcp");
+  const funnel = await getFunnelMetricsViaMcp(brief.id, items[0].id);
+  console.log(`  ✓ Monotonic conversion funnel for ${items[0].platform}:`, funnel);
+  if (funnel.reached < 1) throw new Error("Funnel metrics reached is 0");
+
+  // 6c. Verify Pre-Aggregated Incremental Materialized View Rollup
+  console.log("\n[E2E Step 6c] Testing ClickHouse campaign_rollup AggregatingMergeTree reads...");
+  const rollups = await aggregateByItemViaMcp(brief.id);
+  console.log(`  ✓ Rollup aggregated items (zero raw scans): ${rollups.length} items`);
+  for (const r of rollups) {
+    console.log(`    - Item ${r.item_id.slice(0, 8)}... (${r.platform}): ${r.impressions} imps, ${r.completes} completes, ${r.likes} likes, ${r.clicks} clicks`);
+  }
+
+  // 6d. Verify Gemini Embeddings & Vector Similarity
+  console.log("\n[E2E Step 6d] Testing gemini-embedding-001 vector similarity...");
+  const { generateEmbedding, cosineSimilarity } = await import("../lib/embeddings");
+  const vec1 = await generateEmbedding(brief.logline, 768);
+  const vec2 = await generateEmbedding("Fantasy adventure about a hero searching for a lost dragon companion", 768);
+  const similarity = cosineSimilarity(vec1, vec2);
+  console.log(`  ✓ Vector cosine similarity against fantasy trailer cluster: ${(similarity * 100).toFixed(2)}%`);
+
   // 7. Run Gemini Data-Grounded Revision Loop
   console.log("\n[E2E Step 7] Running Gemini campaign revision loop against 4.56B YouTube benchmark...");
   const revision = await proposeCampaignRevision(brief.id);

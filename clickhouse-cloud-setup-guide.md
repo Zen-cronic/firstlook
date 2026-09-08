@@ -93,7 +93,7 @@ CLICKHOUSE_PASSWORD=YOUR_COPIED_PASSWORD
 CLICKHOUSE_SECURE=true
 CLICKHOUSE_ALLOW_WRITE_ACCESS=true
 
-# Unified URL pattern (similar to playerplayer / Trigger.dev setups)
+# Unified URL pattern
 CLICKHOUSE_URL=https://default:YOUR_COPIED_PASSWORD@x8z7wq99ab.us-central1.gcp.clickhouse.cloud:8443
 ```
 
