@@ -18,8 +18,8 @@ storage/uploads/*
 !storage/uploads/.gitkeep
 storage/renders/*
 !storage/renders/.gitkeep
-data/*.db
-data/*.sqlite
+data/
+data/*
 
 # remotion
 .remotion/
