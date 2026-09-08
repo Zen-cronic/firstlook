@@ -238,11 +238,11 @@ export default function CampaignDetailPage({
                     <span className="text-xs font-mono font-bold uppercase text-red-400">4:5 Poster Still</span>
                     <span className="text-[10px] font-mono bg-neutral-800 px-2 py-0.5 rounded text-gray-400">Feed Post</span>
                   </div>
-                  <div className="aspect-[4/5] max-h-64 bg-black rounded-lg overflow-hidden relative border border-white/10 mx-auto flex items-center justify-center">
+                  <div className="aspect-[4/5] max-h-56 bg-neutral-950 rounded-lg overflow-hidden relative border border-white/10 mx-auto flex items-center justify-center p-1.5 shadow-inner">
                     <img
                       src={brief.poster_path ? `/api/media/uploads/${brief.poster_path}` : ""}
                       alt="Poster"
-                      className="w-full h-full object-cover"
+                      className="max-h-full max-w-full object-contain rounded"
                     />
                   </div>
                   <div className="text-xs text-gray-400 font-mono flex items-center justify-between pt-1">

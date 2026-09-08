@@ -51,6 +51,7 @@ export const Teaser: React.FC<TeaserProps> = ({
                 <OffthreadVideo
                   src={clip.src}
                   className="w-full h-full object-cover"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   muted
                 />
                 {clip.isProxy && <ProxyBadge label={clip.label || "GENERATED · PROXY"} />}

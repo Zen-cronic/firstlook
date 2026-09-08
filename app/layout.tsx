@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Film, Sparkles, Database, ShieldAlert } from "lucide-react";
+import { Film, Sparkles, Database } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,8 +25,8 @@ export default function RootLayout({
               </div>
               <div>
                 <span className="font-extrabold text-lg tracking-tight uppercase">FirstLook</span>
-                <span className="ml-2 text-[10px] font-mono bg-red-950/80 text-red-400 border border-red-800 px-2 py-0.5 rounded uppercase font-bold">
-                  ClickHouse Track
+                <span className="ml-2 text-[10px] font-mono bg-neutral-800 text-gray-300 border border-white/10 px-2 py-0.5 rounded uppercase font-semibold">
+                  Studio Platform
                 </span>
               </div>
             </Link>
@@ -43,16 +43,6 @@ export default function RootLayout({
           </div>
         </header>
 
-        {/* Honesty Banner */}
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-2">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs font-mono text-amber-400">
-            <ShieldAlert className="w-4 h-4 flex-shrink-0" />
-            <span>
-              <strong>HONESTY MODEL:</strong> Real footage basis; generated clips labeled <code>GENERATED · PROXY</code>; publishing simulated; benchmark scans real 4.56B YouTube rows via <code>mcp-clickhouse</code>.
-            </span>
-          </div>
-        </div>
-
         {/* Main Content */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
           {children}
@@ -62,7 +52,7 @@ export default function RootLayout({
         <footer className="border-t border-white/10 py-6 text-center text-xs font-mono text-gray-500">
           <div className="flex items-center justify-center gap-2">
             <Database className="w-4 h-4 text-emerald-400" />
-            <span>Runtime ClickHouse OLAP powered by <strong>mcp-clickhouse</strong> (4.56B Youtube Rows)</span>
+            <span>ClickHouse Cloud Analytics · <strong>mcp-clickhouse</strong> Benchmark Core (4.56B Rows)</span>
           </div>
         </footer>
       </body>
