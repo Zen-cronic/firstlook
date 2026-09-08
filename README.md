@@ -37,6 +37,7 @@ This application **actively uses ClickHouse at runtime via the official `mcp-cli
 - **AI Engine**: Gemini 3.6 Flash (`@google/genai`) + Veo 3.1 proxy generator
 - **OLAP Engine**: ClickHouse via `mcp-clickhouse` (`@modelcontextprotocol/sdk`)
 - **Render Engine**: Remotion 4 (`@remotion/renderer`)
+- **Cloud Infrastructure**: Google Cloud Run + Google Cloud Storage (`gs://agentic-cinema-2026-media`) + Google Cloud Secret Manager
 - **Frontend / Framework**: Next.js 15 (App Router), React 19, Tailwind CSS v4, Lucide Icons
 - **App State**: SQLite (`node:sqlite`) + `ffprobe`/`ffmpeg`
 
