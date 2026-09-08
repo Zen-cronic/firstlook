@@ -81,7 +81,7 @@ gcloud run deploy firstlook-web \
 |---|---|
 | `GCP_PROJECT_ID` | `agentic-cinema-2026-kzh` |
 | `GCS_BUCKET_NAME` | `agentic-cinema-2026-media` |
-| `GEMINI_API_KEY` | Google AI Studio Key (Gemini 3.6 Flash & Veo 3.1) |
+| `GEMINI_API_KEY` | Google Gemini API Key (Gemini 3.6 Flash & Gemini TTS Speech Generation) |
 | `CLICKHOUSE_HOST` | `sql-clickhouse.clickhouse.com` (4.56B YouTube rows via `mcp-clickhouse`) |
 | `CLICKHOUSE_PORT` | `8443` |
 | `CLICKHOUSE_USER` | `demo` |
