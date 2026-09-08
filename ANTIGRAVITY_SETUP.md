@@ -52,7 +52,20 @@ subcommand (`command(git commit)`). **This is already configured** with the comm
   ffprobe ffmpeg` + shell/read helpers (`ls cat grep find head tail wc sed awk jq env mkdir cp mv touch`).
 - Git allowed by **subcommand** — `init add commit status log diff branch checkout restore config
   remote fetch`. **`git push` is intentionally NOT allowed**, so an outward push still prompts.
-- Not listed (so they still prompt): `curl wget docker rm ssh sudo` and any `git push`.
+- **gcloud — non-destructive reads only**, by subcommand: `version info`, `components list`,
+  `auth list`, `config` (broad), `projects` (broad), `services list`, `run services list/describe`,
+  `run revisions list/describe`, `sql instances list/describe`, `sql databases list`,
+  `artifacts repositories list`, `artifacts docker images list`, `iam service-accounts list`,
+  `iam roles list`, `secrets list/describe`, `secrets versions list`, `logging read`.
+- Not listed (so they still prompt): `curl wget docker rm ssh sudo`, any `git push`, and every
+  **mutating gcloud** verb — `run deploy`, `sql|secrets|iam|artifacts|services create/delete/update/
+  enable`, `add-iam-policy-binding`, `secrets versions add`, etc.
+
+> ⚠️ How `agy` records "always allow": at the **group** level (e.g. `command(gcloud config)`,
+> `command(gcloud projects)`), not the full command — so those two broad entries also cover
+> `config set` / `projects delete`. Pre-seeding the read subcommands (above) means the agent won't
+> prompt on frequent reads, which avoids broad-allowing a whole group by reflex. Narrow the two
+> broad entries to `... list`/`... describe` if you want their mutating verbs gated too.
 
 Applies to `agy` everywhere (not just this workspace). Edit the file to adjust, or manage interactively
 with `/config`. **Changes take effect in a new `agy` session.** Nuclear option (sandbox only):
