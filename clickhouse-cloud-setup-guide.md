@@ -141,7 +141,7 @@ npm run test:ch-mcp
 
 ## 5. Connecting Antigravity CLI Directly via MCP
 
-If you want Antigravity CLI or Claude Code to query your dedicated ClickHouse Cloud instance directly during development:
+If you want Antigravity CLI to query your dedicated ClickHouse Cloud instance directly during development:
 
 ```bash
 # Stdio transport via uvx:

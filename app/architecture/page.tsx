@@ -132,6 +132,9 @@ export default function ArchitecturePage() {
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono">
+            <span className="flex items-center gap-1.5 text-purple-400 bg-purple-950/60 border border-purple-800 px-3 py-1.5 rounded-xl">
+              <Sparkles className="w-4 h-4" /> Agent Skills (11 Rules)
+            </span>
             <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-3 py-1.5 rounded-xl">
               <Database className="w-4 h-4" /> 4.56B Rows Scanned
             </span>
@@ -373,7 +376,7 @@ export default function ArchitecturePage() {
                 onClick={() => setSelectedNode("clickhouse")}
               >
                 <rect 
-                  x="290" y="320" width="360" height="130" rx="20" 
+                  x="290" y="320" width="380" height="138" rx="20" 
                   fill="url(#grad-ch)" 
                   stroke={selectedNode === "clickhouse" ? "#34d399" : "#059669"} 
                   strokeWidth={selectedNode === "clickhouse" ? 3.5 : 2}
@@ -388,15 +391,18 @@ export default function ArchitecturePage() {
                   ClickHouse Cloud OLAP · Section 7.B Compliant
                 </text>
 
-                <line x1="310" y1="385" x2="630" y2="385" stroke="rgba(255,255,255,0.15)" />
-                <text x="310" y="403" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
+                <line x1="310" y1="385" x2="650" y2="385" stroke="rgba(255,255,255,0.15)" />
+                <text x="310" y="401" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
                   • 4,557,605,031 Real YouTube Rows Scanned (&lt; 2s)
                 </text>
-                <text x="310" y="420" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
+                <text x="310" y="416" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
                   • campaign_rollup MV (AggregatingMergeTree, zero raw scans)
                 </text>
-                <text x="310" y="437" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
+                <text x="310" y="431" fill="#a7f3d0" fontSize="10" fontFamily="monospace">
                   • windowFunnel Monotonic Viewer Conversion Analytics
+                </text>
+                <text x="310" y="446" fill="#c4b5fd" fontSize="9" fontFamily="monospace">
+                  • ClickHouse Agent Skills (Bloom Filter, Safety Limits, Batching)
                 </text>
               </g>
 

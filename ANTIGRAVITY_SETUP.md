@@ -81,7 +81,7 @@ npm run dev
 
 ## Notes
 
-- `.claude/` and `.codex/` dirs here (if present) are inert for this Google-only event — don't invoke them.
+- Dedicated to Google Antigravity & Gemini CLI — Section 7.B Compliant.
 - Skills alternative: instead of the 34-skill mirror, `.agents/skills.json` can `inherit` the suite's
   canonical `skills/` (see the agy-customizations `json_configs` doc) — but the local mirror is
   self-contained, which a submission repo wants.
