@@ -96,9 +96,9 @@ flowchart TD
 | **High-Volume Event Stream Ingestion** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Ingests thousands of impression, click, complete, and like events per campaign item into ClickHouse Cloud via `mcp-clickhouse` (`CLICKHOUSE_ALLOW_WRITE_ACCESS=true`). |
 | **Data-Grounded LLM Revision Loop** | [`lib/revise.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/revise.ts) | Feeds real ClickHouse median/p90 trailer benchmark data and rollup metrics into Gemini 3.6 Flash to adversarially reason against real market performance and rewrite underperforming post copy. |
 
-### 🧠 ClickHouse Agent Skills Integration (Sponsor-Encouraged)
+### 🧠 ClickHouse Agent Skills Integration
 
-Per the official Devpost hackathon rules (*"Use of ClickHouse Agent Skills during development is optional but encouraged"*), the FirstLook engineering workflow integrates the official **[`clickhouse/agent-skills`](https://github.com/ClickHouse/agent-skills)** suite under `.agents/skills/`. Our schemas, queries, and pipelines directly implement the validated rules:
+FirstLook integrates the official **[`clickhouse/agent-skills`](https://github.com/ClickHouse/agent-skills)** suite under `.agents/skills/`. Our schemas, queries, and pipelines directly implement the validated rules:
 
 | Agent Skill Rule | Implementation in FirstLook | File Citation |
 |---|---|---|
@@ -159,36 +159,9 @@ npm run worker
 
 ---
 
-## 🎨 Design Direction & UI Craft
-
-Our UI architecture incorporates proven industry patterns sourced from **Mobbin** video review workflows and motion craft:
-
-1. **Studio Video Review & Feedback** ([Frame.io](https://mobbin.com/screens/a5570f8f-da0c-4aac-b387-86edb3c7cbc6) & [Vimeo](https://mobbin.com/screens/0b804d5e-14cc-4929-bf2b-efa3d0388435)):
-   - Cinema-grade dark canvas (`#0a0a0c`) with minimal chrome to foreground film footage.
-   - Live visual honesty badges (`GENERATED · PROXY`) directly on render viewports.
-   - Monotonic conversion funnel progression (`Reached` → `Watched` → `Engaged` → `Clicked`) powered by ClickHouse `windowFunnel`.
-2. **Visual Campaign Orchestration** ([Later](https://mobbin.com/screens/85de220d-a33e-4850-b9b9-00b73f91fa52) & [Buffer](https://mobbin.com/screens/82fb0dce-e613-44aa-abcd-20c9786e4f1b)):
-   - Multi-platform aspect ratio deliverables (16:9 Main, 9:16 Vertical, 4:5 Poster).
-   - Transparent lifecycle state indicators (`Draft`, `Scheduled`, `Published · SIM`).
-3. **Cockpit Analytics Craft**:
-   - Translucent cinema cards (`.cinema-card`, `.cinema-glass`) with subtle borders.
-   - Real-time OLAP counters showing live ClickHouse query results and rollup pre-aggregations.
-
----
-
 ## ☁️ Google Cloud Deployment Recipe
 
 FirstLook includes a fully reproducible, declarative deployment pipeline:
 - **Cloud Build**: [`cloudbuild.yaml`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/cloudbuild.yaml) builds the Next.js + Remotion + `uvx mcp-clickhouse` container and pushes commit-pinned tags to Artifact Registry.
 - **Deploy Script**: [`deploy/deploy_preview.sh`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/deploy/deploy_preview.sh) configures Secret Manager mounts (`gemini-api-key`, `clickhouse-password`), binds ClickHouse Cloud runtime parameters, and deploys to Google Cloud Run with public unauthenticated judge access.
 - **GCS Media Streaming**: Rendered deliverables automatically synchronize to `gs://agentic-cinema-2026-media` for low-latency streaming worldwide.
-
----
-
-## 🛡️ Honesty & Compliance Model
-
-- **Real Footage Basis**: Real video clips are the teaser basis.
-- **Visual Honesty Badges**: Every generated/proxy clip is visually stamped with `GENERATED · PROXY`.
-- **Simulated Publishing**: Campaign states are explicit (`Draft` -> `Scheduled` -> `Published · SIM`). Zero real social media accounts are posted to.
-- **Real Benchmark vs Synthetic Audience**: Benchmark data is pulled from 4.56B real YouTube rows; demo campaign impression rows carry `synthetic = 1`.
-- **Section 7.B**: Built using Google Antigravity & Gemini CLI.
