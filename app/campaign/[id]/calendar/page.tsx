@@ -10,9 +10,9 @@ import {
   Clock,
   Film,
   ArrowLeft,
-  Share2,
   Database,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 
 export default function CampaignCalendarPage({
@@ -25,6 +25,7 @@ export default function CampaignCalendarPage({
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [publishing, setPublishing] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const loadData = async () => {
     try {
@@ -33,9 +34,10 @@ export default function CampaignCalendarPage({
       const current = briefs.find((b: any) => b.id === briefId);
       setBrief(current);
 
-      // In real app, items fetched from SQLite
-      if (current && current.versionsCount > 0) {
-        // mock initial calendar view if items exist
+      const itemsRes = await fetch(`/api/calendar?briefId=${briefId}`);
+      const itemsData = await itemsRes.json();
+      if (itemsData.items) {
+        setItems(itemsData.items);
       }
     } catch (err) {
       console.error(err);
@@ -50,6 +52,7 @@ export default function CampaignCalendarPage({
 
   const handlePublish = async (itemId: string) => {
     setPublishing(itemId);
+    setFeedback(null);
     try {
       const res = await fetch("/api/publish", {
         method: "POST",
@@ -58,10 +61,17 @@ export default function CampaignCalendarPage({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert(`Simulated publish completed! Written ${data.rowsWritten} impression events to ClickHouse via mcp-clickhouse.`);
+
+      setFeedback({
+        type: "success",
+        message: `Simulated publish completed! Ingested ${data.rowsWritten} impression & engagement events into ClickHouse via mcp-clickhouse.`,
+      });
       await loadData();
     } catch (err: any) {
-      alert("Publish failed: " + err.message);
+      setFeedback({
+        type: "error",
+        message: "Publish failed: " + (err.message || "Unknown error"),
+      });
     } finally {
       setPublishing(null);
     }
@@ -103,6 +113,23 @@ export default function CampaignCalendarPage({
         </div>
       </div>
 
+      {feedback && (
+        <div
+          className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-mono ${
+            feedback.type === "success"
+              ? "bg-emerald-950/70 border-emerald-500/40 text-emerald-300"
+              : "bg-red-950/70 border-red-500/40 text-red-300"
+          }`}
+        >
+          {feedback.type === "success" ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+          )}
+          <span>{feedback.message}</span>
+        </div>
+      )}
+
       {/* Filmstrip Timeline */}
       <div className="cinema-card rounded-2xl p-8 space-y-6">
         <div className="flex items-center justify-between">
@@ -110,40 +137,14 @@ export default function CampaignCalendarPage({
             <Film className="w-5 h-5 text-red-500" />
             <span>Scheduled Campaign Deliverables (Pre-Release Timeline)</span>
           </h2>
-          <span className="text-xs font-mono text-gray-500">6 Items Planned</span>
+          <span className="text-xs font-mono text-gray-500">{items.length} Items Planned</span>
         </div>
 
         <div className="space-y-4">
-          {/* Sample Scheduled Items */}
-          {[
-            {
-              id: "item-1",
-              platform: "tiktok",
-              assetKind: "teaser_vertical",
-              caption: "In a world of dragons, one search changes everything. #Sintel #FantasyFilm",
-              days: "-30 Days",
-              state: "scheduled",
-            },
-            {
-              id: "item-2",
-              platform: "instagram",
-              assetKind: "poster",
-              caption: "Find the dragon. Official Teaser Poster for SINTEL. In theaters Oct 24.",
-              days: "-21 Days",
-              state: "scheduled",
-            },
-            {
-              id: "item-3",
-              platform: "x",
-              assetKind: "teaser",
-              caption: "Your past will hunt you down. Watch the official 16:9 teaser trailer for SINTEL.",
-              days: "-14 Days",
-              state: "published_sim",
-            },
-          ].map((item) => (
+          {items.map((item) => (
             <div
               key={item.id}
-              className="bg-neutral-900 border border-white/10 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="bg-neutral-900 border border-white/10 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-white/20"
             >
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center gap-3">
@@ -166,6 +167,11 @@ export default function CampaignCalendarPage({
                   )}
                 </div>
                 <p className="text-sm text-white font-medium">{item.caption}</p>
+                <div className="text-[11px] font-mono text-gray-500 flex items-center gap-2">
+                  <span>ID: {item.id.slice(0, 8)}...</span>
+                  <span>•</span>
+                  <span>Deliverable: {item.assetKind}</span>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -173,7 +179,7 @@ export default function CampaignCalendarPage({
                   <button
                     onClick={() => handlePublish(item.id)}
                     disabled={publishing === item.id}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-wider transition-all shadow-md"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
                   >
                     {publishing === item.id ? (
                       <Clock className="w-3.5 h-3.5 animate-spin" />
