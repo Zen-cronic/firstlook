@@ -1,5 +1,8 @@
 # FirstLook — Film Marketing Engine (ClickHouse Track)
 
+> **Submission for the [Agentic Cinema Hackathon](https://agentic-cinema.devpost.com/) (ClickHouse Track)**  
+> **Live App:** [https://firstlook-web-933560214849.us-central1.run.app](https://firstlook-web-933560214849.us-central1.run.app)
+
 **FirstLook** is a film-marketing agent that tests marketing campaign performance against real theatrical and streaming releases **before you spend a single dollar on ad campaigns**.
 
 Brief a film + release date → Gemini 3.6 Flash plans a campaign grounded strictly in the film's real assets → render a 16:9 teaser trailer, 9:16 vertical video, and 4:5 poster via Remotion with visual `GENERATED · PROXY` honesty labels → approve -> honest-state campaign calendar (`Published · SIM`) → **the load-bearing move: compare campaign engagement against real theatrical trailer releases using ClickHouse's public 4.56-billion-row `youtube` dataset via the official `mcp-clickhouse` MCP server**, and trigger an LLM revision loop reasoning against that real benchmark.
