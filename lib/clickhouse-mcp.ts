@@ -36,9 +36,9 @@ let schemaInitialized = false;
 export async function executeMcpQuery(sql: string, extraEnv?: Record<string, string>): Promise<any[]> {
   const envVars = {
     ...process.env,
-    CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || "sql-clickhouse.clickhouse.com",
+    CLICKHOUSE_HOST: process.env.CLICKHOUSE_HOST || "k50lgadaib.us-central1.gcp.clickhouse.cloud",
     CLICKHOUSE_PORT: process.env.CLICKHOUSE_PORT || "8443",
-    CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || "demo",
+    CLICKHOUSE_USER: process.env.CLICKHOUSE_USER || "default",
     CLICKHOUSE_PASSWORD: process.env.CLICKHOUSE_PASSWORD || "",
     CLICKHOUSE_SECURE: process.env.CLICKHOUSE_SECURE || "true",
     CLICKHOUSE_VERIFY: "true",
@@ -165,14 +165,30 @@ export async function getTrailerBenchmark(): Promise<TrailerBenchmark> {
     FROM youtube.youtube
     WHERE view_count > 5000
       AND positionCaseInsensitive(title, 'official trailer') > 0
-    SETTINGS max_execution_time = 30, timeout_before_checking_execution_speed = 0
   `;
 
+  const playgroundHost =
+    process.env.CLICKHOUSE_PLAYGROUND_HOST ||
+    process.env.CLICKHOUSE_READ_ONLY_HOST ||
+    "sql-clickhouse.clickhouse.com";
+  const playgroundPort =
+    process.env.CLICKHOUSE_PLAYGROUND_PORT ||
+    process.env.CLICKHOUSE_READ_ONLY_PORT ||
+    (playgroundHost.includes("play.clickhouse.com") ? "443" : "8443");
+  const playgroundUser =
+    process.env.CLICKHOUSE_PLAYGROUND_USER ||
+    process.env.CLICKHOUSE_READ_ONLY_USER ||
+    (playgroundHost.includes("play.clickhouse.com") ? "play" : "demo");
+  const playgroundPassword =
+    process.env.CLICKHOUSE_PLAYGROUND_PASSWORD ||
+    process.env.CLICKHOUSE_READ_ONLY_PASSWORD ||
+    "";
+
   const rows = await executeMcpQuery(sql, {
-    CLICKHOUSE_HOST: process.env.CLICKHOUSE_PLAYGROUND_HOST || "sql-clickhouse.clickhouse.com",
-    CLICKHOUSE_PORT: process.env.CLICKHOUSE_PLAYGROUND_PORT || "8443",
-    CLICKHOUSE_USER: process.env.CLICKHOUSE_PLAYGROUND_USER || "demo",
-    CLICKHOUSE_PASSWORD: process.env.CLICKHOUSE_PLAYGROUND_PASSWORD || "",
+    CLICKHOUSE_HOST: playgroundHost,
+    CLICKHOUSE_PORT: playgroundPort,
+    CLICKHOUSE_USER: playgroundUser,
+    CLICKHOUSE_PASSWORD: playgroundPassword,
     CLICKHOUSE_SECURE: "true",
   });
 
@@ -253,8 +269,14 @@ export async function seedSyntheticEventsViaMcp(item: {
     const insertSql = `INSERT INTO campaign_events (event_id, session_id, brief_id, item_id, version_id, platform, kind, synthetic, props, ts) VALUES ${batch}`;
     try {
       await executeMcpQuery(insertSql);
-    } catch (err) {
-      console.warn("MCP Insert batch notice:", err);
+    } catch (err: any) {
+      console.error(`[ClickHouse MCP] Insert batch ${Math.floor(i / batchSize) + 1} failed:`, err?.message || err);
+      // If connected to a read-only instance, log clear diagnostic
+      if (err?.message?.includes("READONLY") || err?.message?.includes("not allowed")) {
+        console.warn("[ClickHouse MCP] Notice: Target instance is read-only. Ensure CLICKHOUSE_HOST points to a writable ClickHouse Cloud cluster.");
+      } else {
+        throw err;
+      }
     }
   }
 

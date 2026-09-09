@@ -9,7 +9,7 @@ _Current as of 2026-09-08. Project: `agentic-cinema-2026-kzh`; region: `us-centr
 | **Google Cloud Project** | `agentic-cinema-2026-kzh` | [Project Dashboard](https://console.cloud.google.com/home/dashboard?project=agentic-cinema-2026-kzh) |
 | **Billing Account** | `01C27D-9EBB10-630C72` (Open & Linked) | [Billing Overview](https://console.cloud.google.com/billing/01C27D-9EBB10-630C72) |
 | **Google Cloud Storage Bucket** | `gs://agentic-cinema-2026-media` (`us-central1`) | [GCS Buckets](https://console.cloud.google.com/storage/browser/agentic-cinema-2026-media?project=agentic-cinema-2026-kzh) |
-| **Vertex AI API (Gemini & Veo)** | `aiplatform.googleapis.com` (Enabled) | [Vertex AI](https://console.cloud.google.com/vertex-ai?project=agentic-cinema-2026-kzh) |
+| **Vertex AI API (Gemini)** | `aiplatform.googleapis.com` (Enabled) | [Vertex AI](https://console.cloud.google.com/vertex-ai?project=agentic-cinema-2026-kzh) |
 | **Cloud Run API** | `run.googleapis.com` (Enabled) | [Cloud Run](https://console.cloud.google.com/run?project=agentic-cinema-2026-kzh) |
 | **Artifact Registry API** | `artifactregistry.googleapis.com` (Enabled) | [Artifact Registry](https://console.cloud.google.com/artifacts?project=agentic-cinema-2026-kzh) |
 | **Live Cloud Run Deployment** | [https://firstlook-web-933560214849.us-central1.run.app](https://firstlook-web-933560214849.us-central1.run.app) | [Cloud Run Service Console](https://console.cloud.google.com/run/detail/us-central1/firstlook-web?project=agentic-cinema-2026-kzh) |
@@ -81,7 +81,7 @@ gcloud run deploy firstlook-web \
 |---|---|
 | `GCP_PROJECT_ID` | `agentic-cinema-2026-kzh` |
 | `GCS_BUCKET_NAME` | `agentic-cinema-2026-media` |
-| `GEMINI_API_KEY` | Google Gemini API Key (Gemini 3.6 Flash & Gemini TTS Speech Generation) |
+| `GEMINI_API_KEY` | Google AI Studio Key (Gemini 3.6 Flash & Gemini TTS Speech Generation) |
 | `CLICKHOUSE_HOST` | `sql-clickhouse.clickhouse.com` (4.56B YouTube rows via `mcp-clickhouse`) |
 | `CLICKHOUSE_PORT` | `8443` |
 | `CLICKHOUSE_USER` | `demo` |
