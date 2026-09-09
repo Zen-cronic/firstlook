@@ -2,7 +2,7 @@
 
 **FirstLook** is a film-marketing agent that tests marketing campaign performance against real theatrical and streaming releases **before you spend a single dollar on ad campaigns**.
 
-Brief a film + release date → Gemini 3.6 Flash plans a campaign grounded strictly in the film's real assets → render a 16:9 teaser trailer, 9:16 vertical video, and 4:5 poster via Remotion with visual `GENERATED · PROXY` honesty labels → approve -> honest-state campaign calendar (`Published · SIM`) → **the load-bearing move: compare campaign engagement against real comparable releases using ClickHouse's public 4.56-billion-row `youtube` dataset via the official `mcp-clickhouse` MCP server**, and trigger an LLM revision loop reasoning against that real benchmark.
+Brief a film + release date → Gemini 3.6 Flash plans a campaign grounded strictly in the film's real assets → render a 16:9 teaser trailer, 9:16 vertical video, and 4:5 poster via Remotion with visual `GENERATED · PROXY` honesty labels → approve -> honest-state campaign calendar (`Published · SIM`) → **the load-bearing move: compare campaign engagement against real theatrical trailer releases using ClickHouse's public 4.56-billion-row `youtube` dataset via the official `mcp-clickhouse` MCP server**, and trigger an LLM revision loop reasoning against that real benchmark.
 
 ---
 
@@ -90,11 +90,11 @@ flowchart TD
 
 | Feature | Where Used in Code | Why ClickHouse is Essential (Substitutability Analysis) |
 |---|---|---|
-| **Real Comparable Release Benchmark** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Performs an instant OLAP aggregation scan over **4,557,605,031 rows** in the public `youtube.youtube` table (`WHERE positionCaseInsensitive(title, 'official trailer') > 0`) to compute true median and p90 engagement rates across 80,000+ movie trailers in ~2 seconds. **PostgreSQL/SQLite cannot scan 4.56B rows in sub-seconds without crashing or timing out.** |
+| **Theatrical Trailer Benchmark** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Performs an instant OLAP aggregation scan over the public 4.56-billion-row `youtube.youtube` table (`WHERE positionCaseInsensitive(title, 'official trailer') > 0`) to compute true median and p90 engagement rates across 44,000+ movie trailers in ~2 seconds. **PostgreSQL/SQLite cannot scan 4.56B rows in sub-seconds without crashing or timing out.** |
 | **Incremental MV Pre-Aggregation** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Computes engagement counts at insert time via `campaign_rollup_mv` into an `AggregatingMergeTree` table (`campaign_rollup`) with `SimpleAggregateFunction(sum, UInt64)`. The LLM revision loop queries pre-aggregated counters with **zero raw table scans**. |
 | **Monotonic Conversion Funnels** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Computes strict sequence-aware conversion funnels (`reached` → `watched` → `engaged` → `clicked`) using ClickHouse's native `windowFunnel(3600)(toDateTime(ts), ...)` across session IDs and JSON `props`. |
 | **High-Volume Event Stream Ingestion** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Ingests thousands of impression, click, complete, and like events per campaign item into ClickHouse Cloud via `mcp-clickhouse` (`CLICKHOUSE_ALLOW_WRITE_ACCESS=true`). |
-| **Data-Grounded LLM Revision Loop** | [`lib/revise.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/revise.ts) | Feeds real ClickHouse median/p90 trailer benchmark data and rollup metrics into Gemini 3.6/3.8 Flash to adversarially reason against real market performance and rewrite underperforming post copy. |
+| **Data-Grounded LLM Revision Loop** | [`lib/revise.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/revise.ts) | Feeds real ClickHouse median/p90 trailer benchmark data and rollup metrics into Gemini 3.6 Flash to adversarially reason against real market performance and rewrite underperforming post copy. |
 
 ### 🧠 ClickHouse Agent Skills Integration (Sponsor-Encouraged)
 
@@ -117,7 +117,7 @@ Per the official Devpost hackathon rules (*"Use of ClickHouse Agent Skills durin
 
 ## 🛠️ Stack & Technology
 
-- **Planning & Reasoning**: Google Gemini 3.8 / 3.6 Flash & Gemini 3.1 Pro Preview (via Vertex AI / `@google/genai`)
+- **Planning & Reasoning**: Google Gemini 3.6 Flash & Gemini 3.1 Pro Preview (via Vertex AI / `@google/genai`)
 - **Voice & Narration**: Google Gemini TTS (`gemini-3.1-flash-tts-preview`, voice `Puck`)
 - **Soundtrack & Music Beds**: Google Lyria 3 (`models/lyria-3-clip-preview` & `lyria-3.5`)
 - **Visuals & Concept Art**: Google Image Generation (`gemini-2.5-flash-image` / `gemini-3.1-flash-image-preview`) with `GENERATED · PROXY` honesty badging
@@ -140,13 +140,13 @@ npm install
 # 2. Configure environment variables (.env.local)
 cp .env.example .env.local
 
-# 3. Seed real 4K Blender CC-BY film assets ("Sintel")
+# 3. Initialize SQLite & seed Blender Sintel film assets
 npm run seed:sintel
 
-# 4. Verify mcp-clickhouse 4.56B-row query
+# 4. Run ClickHouse benchmark validation via mcp-clickhouse
 npm run test:ch-mcp
 
-# 5. Verify Remotion headless render engine
+# 5. Test Remotion media composition pipeline
 npm run test:render
 
 # 6. Run full end-to-end verification (Google Media + ClickHouse MV Rollup + Funnel + Embeddings)
@@ -159,9 +159,9 @@ npm run worker
 
 ---
 
-## 🎨 Design Direction & Motion Graphics Architecture
+## 🎨 Design Direction & UI Craft
 
-Our UI architecture incorporates proven industry patterns sourced from **Mobbin** video review workflows and motion craft from **[Seesaw](https://www.seesaw.website/)**:
+Our UI architecture incorporates proven industry patterns sourced from **Mobbin** video review workflows and motion craft:
 
 1. **Studio Video Review & Feedback** ([Frame.io](https://mobbin.com/screens/a5570f8f-da0c-4aac-b387-86edb3c7cbc6) & [Vimeo](https://mobbin.com/screens/0b804d5e-14cc-4929-bf2b-efa3d0388435)):
    - Cinema-grade dark canvas (`#0a0a0c`) with minimal chrome to foreground film footage.
@@ -170,10 +170,9 @@ Our UI architecture incorporates proven industry patterns sourced from **Mobbin*
 2. **Visual Campaign Orchestration** ([Later](https://mobbin.com/screens/85de220d-a33e-4850-b9b9-00b73f91fa52) & [Buffer](https://mobbin.com/screens/82fb0dce-e613-44aa-abcd-20c9786e4f1b)):
    - Multi-platform aspect ratio deliverables (16:9 Main, 9:16 Vertical, 4:5 Poster).
    - Transparent lifecycle state indicators (`Draft`, `Scheduled`, `Published · SIM`).
-3. **Seesaw-Inspired Kinetic Polish**:
-   - Dynamic typography letter-spacing expansion on title reveal (`tracking-tighter` to `tracking-wider`).
-   - Glassmorphism analytical cards (`backdrop-blur-md`, `bg-neutral-900/60`, 1px border with 10% opacity).
-   - High-throughput OLAP counter animation matching the speed of ClickHouse 4.56B row scans.
+3. **Cockpit Analytics Craft**:
+   - Translucent cinema cards (`.cinema-card`, `.cinema-glass`) with subtle borders.
+   - Real-time OLAP counters showing live ClickHouse query results and rollup pre-aggregations.
 
 ---
 
