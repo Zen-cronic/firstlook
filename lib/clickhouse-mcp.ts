@@ -111,7 +111,8 @@ export async function initClickHouseSchema(): Promise<void> {
       kind       Enum8('impression'=1,'like'=2,'click'=3,'complete'=4),
       synthetic  UInt8 DEFAULT 1,
       props      String,
-      ts         DateTime64(3) DEFAULT now64(3)
+      ts         DateTime64(3) DEFAULT now64(3),
+      INDEX idx_session_id session_id TYPE bloom_filter GRANULARITY 4
     ) ENGINE = MergeTree
     ORDER BY (brief_id, item_id, ts)
   `;
@@ -149,6 +150,7 @@ export async function initClickHouseSchema(): Promise<void> {
  * for real movie-trailer engagement benchmark statistics.
  *
  * NOTE: Fails loud on network or cluster error — never silently serves hardcoded fake literals.
+ * Enforces safety limits per ClickHouse Agent Skills rule agent-query-safety.
  */
 export async function getTrailerBenchmark(): Promise<TrailerBenchmark> {
   if (benchmarkCache) return benchmarkCache;
@@ -163,6 +165,7 @@ export async function getTrailerBenchmark(): Promise<TrailerBenchmark> {
     FROM youtube.youtube
     WHERE view_count > 5000
       AND positionCaseInsensitive(title, 'official trailer') > 0
+    SETTINGS max_execution_time = 30, timeout_before_checking_execution_speed = 0
   `;
 
   const rows = await executeMcpQuery(sql, {
@@ -243,8 +246,8 @@ export async function seedSyntheticEventsViaMcp(item: {
     }
   }
 
-  // Insert in batches of 500 rows via mcp-clickhouse
-  const batchSize = 500;
+  // Insert in batches of 1000 rows via mcp-clickhouse (per ClickHouse rule insert-batch-size)
+  const batchSize = 1000;
   for (let i = 0; i < values.length; i += batchSize) {
     const batch = values.slice(i, i + batchSize).join(",");
     const insertSql = `INSERT INTO campaign_events (event_id, session_id, brief_id, item_id, version_id, platform, kind, synthetic, props, ts) VALUES ${batch}`;
@@ -261,11 +264,12 @@ export async function seedSyntheticEventsViaMcp(item: {
 /**
  * Aggregate campaign metrics per item from the ClickHouse Incremental Rollup table (campaign_rollup).
  * This executes zero table scans over raw events at query time — reads use pre-aggregated sum counters.
+ * Follows decision-real-time-preaggregation dual-path design.
  */
 export async function aggregateByItemViaMcp(briefId: string): Promise<ItemMetrics[]> {
   await initClickHouseSchema();
 
-  // Primary read from AggregatingMergeTree rollup
+  // Primary read from AggregatingMergeTree rollup (fast, zero raw scans)
   const rollupSql = `
     SELECT
       item_id,
@@ -277,6 +281,8 @@ export async function aggregateByItemViaMcp(briefId: string): Promise<ItemMetric
     FROM campaign_rollup
     WHERE brief_id = '${briefId}'
     GROUP BY item_id
+    LIMIT 100
+    SETTINGS max_execution_time = 15
   `;
 
   try {
@@ -307,6 +313,8 @@ export async function aggregateByItemViaMcp(briefId: string): Promise<ItemMetric
     FROM campaign_events
     WHERE brief_id = '${briefId}' AND synthetic = 1
     GROUP BY item_id
+    LIMIT 100
+    SETTINGS max_execution_time = 15
   `;
 
   try {
@@ -350,6 +358,7 @@ export async function getFunnelMetricsViaMcp(briefId: string, itemId: string): P
       WHERE brief_id = '${briefId}' AND item_id = '${itemId}'
       GROUP BY session_id
     )
+    SETTINGS max_execution_time = 15
   `;
 
   try {

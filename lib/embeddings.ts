@@ -13,7 +13,7 @@ export async function generateEmbedding(text: string, dimensions: number = 768):
       contents: text,
     });
 
-    const candidate = response.embeddings?.[0] || response.embedding;
+    const candidate = response.embeddings?.[0] || (response as any).embedding;
     if (candidate?.values) {
       return candidate.values.slice(0, dimensions);
     }

@@ -37,6 +37,9 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "submission"
+    "submission",
+    "data",
+    ".agents",
+    "film"
   ]
 }
