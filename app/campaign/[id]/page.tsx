@@ -9,12 +9,17 @@ import {
   Calendar,
   RefreshCw,
   CheckCircle,
+  CheckCircle2,
   Play,
   Share2,
   TrendingUp,
   AlertTriangle,
   FileText,
   Clock,
+  BarChart3,
+  Filter,
+  ArrowDown,
+  Layers,
 } from "lucide-react";
 
 export default function CampaignDetailPage({
@@ -25,11 +30,33 @@ export default function CampaignDetailPage({
   const { id: briefId } = use(params);
   const [brief, setBrief] = useState<any>(null);
   const [benchmark, setBenchmark] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [selectedFunnelItemId, setSelectedFunnelItemId] = useState<string>("");
   const [generating, setGenerating] = useState(false);
   const [revising, setRevising] = useState(false);
   const [recommendation, setRecommendation] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"creative" | "benchmark">("creative");
+  const [activeTab, setActiveTab] = useState<"creative" | "benchmark" | "analytics">("creative");
   const [loading, setLoading] = useState(true);
+
+  const loadAnalytics = async (itemId?: string) => {
+    setLoadingAnalytics(true);
+    try {
+      const url = `/api/analytics?briefId=${briefId}${itemId ? `&itemId=${encodeURIComponent(itemId)}` : ""}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setAnalytics(data);
+        if (data.activeItemId) {
+          setSelectedFunnelItemId(data.activeItemId);
+        }
+      }
+    } catch (err) {
+      console.error("Analytics fetch error:", err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -40,7 +67,11 @@ export default function CampaignDetailPage({
 
       const benchRes = await fetch("/api/benchmark");
       const benchData = await benchRes.json();
-      setBenchmark(benchData);
+      if (benchData && !benchData.error) {
+        setBenchmark(benchData);
+      }
+
+      await loadAnalytics();
     } catch (err) {
       console.error(err);
     } finally {
@@ -170,6 +201,23 @@ export default function CampaignDetailPage({
           <Database className="w-4 h-4 text-emerald-400" />
           <span>ClickHouse 4.56B YouTube Benchmark</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab("analytics")}
+          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === "analytics"
+              ? "border-cyan-500 text-cyan-400"
+              : "border-transparent text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-cyan-400" />
+          <span>ClickHouse MV Rollup &amp; Funnel</span>
+          {analytics?.rollups?.length > 0 && (
+            <span className="text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded-full">
+              {analytics.rollups.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Tab 1: Creative Previews */}
@@ -273,7 +321,9 @@ export default function CampaignDetailPage({
                     </span>
                   </h2>
                   <p className="text-xs text-gray-400 font-mono">
-                    Scanned {benchmark?.rowsScanned ? Number(benchmark.rowsScanned).toLocaleString() : "4,557,605,031"} rows via <code>mcp-clickhouse</code> stdio transport
+                    {benchmark?.rowsScanned
+                      ? `Scanned ${Number(benchmark.rowsScanned).toLocaleString()} rows in youtube.youtube via mcp-clickhouse stdio transport`
+                      : (loading ? "Scanning 4.56B-row ClickHouse dataset via mcp-clickhouse..." : "ClickHouse 4.56B YouTube dataset")}
                   </p>
                 </div>
               </div>
@@ -297,28 +347,28 @@ export default function CampaignDetailPage({
               <div className="bg-black/60 border border-white/10 rounded-xl p-4 space-y-1">
                 <span className="text-[11px] font-mono text-gray-400 uppercase">Trailers Scanned</span>
                 <p className="text-2xl font-black font-mono text-white">
-                  {benchmark?.videos ? Number(benchmark.videos).toLocaleString() : "44,638"}
+                  {benchmark?.videos ? Number(benchmark.videos).toLocaleString() : (loading ? "..." : "--")}
                 </p>
               </div>
 
               <div className="bg-black/60 border border-white/10 rounded-xl p-4 space-y-1">
                 <span className="text-[11px] font-mono text-gray-400 uppercase">Median Engagement</span>
                 <p className="text-2xl font-black font-mono text-amber-400">
-                  {benchmark?.medianEngagedPct || 0.5}%
+                  {benchmark?.medianEngagedPct !== undefined ? `${benchmark.medianEngagedPct}%` : (loading ? "..." : "--")}
                 </p>
               </div>
 
               <div className="bg-black/60 border border-emerald-500/30 rounded-xl p-4 space-y-1">
                 <span className="text-[11px] font-mono text-emerald-400 uppercase">Top 90% (p90) Engagement</span>
                 <p className="text-2xl font-black font-mono text-emerald-400">
-                  {benchmark?.p90EngagedPct || 2.91}%
+                  {benchmark?.p90EngagedPct !== undefined ? `${benchmark.p90EngagedPct}%` : (loading ? "..." : "--")}
                 </p>
               </div>
 
               <div className="bg-black/60 border border-white/10 rounded-xl p-4 space-y-1">
                 <span className="text-[11px] font-mono text-gray-400 uppercase">Median Trailer Views</span>
                 <p className="text-2xl font-black font-mono text-white">
-                  {benchmark?.medianViews ? Number(benchmark.medianViews).toLocaleString() : "27,853"}
+                  {benchmark?.medianViews ? Number(benchmark.medianViews).toLocaleString() : (loading ? "..." : "--")}
                 </p>
               </div>
             </div>
@@ -350,6 +400,283 @@ export default function CampaignDetailPage({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Tab 3: ClickHouse MV Rollup & windowFunnel */}
+      {activeTab === "analytics" && (
+        <div className="space-y-8">
+          {/* Header & Controls */}
+          <div className="cinema-card rounded-2xl p-6 border border-cyan-500/20 bg-gradient-to-b from-neutral-900 via-neutral-950 to-cyan-950/20 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold uppercase tracking-tight text-white flex items-center gap-2">
+                    <span>ClickHouse Incremental Rollup &amp; windowFunnel</span>
+                    <span className="text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-700 px-2 py-0.5 rounded uppercase">
+                      mcp-clickhouse
+                    </span>
+                  </h2>
+                  <p className="text-xs text-gray-400 font-mono">
+                    AggregatingMergeTree (zero raw scans) · Monotonic windowFunnel(3600) · Tagged <code>synthetic = 1</code>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/campaign/${briefId}/calendar`}
+                  className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-3 py-2 rounded-xl text-xs uppercase tracking-wider transition-all border border-white/10"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Calendar Stream</span>
+                </Link>
+
+                <button
+                  onClick={() => loadAnalytics(selectedFunnelItemId)}
+                  disabled={loadingAnalytics}
+                  className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-cyan-600/30"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingAnalytics ? "animate-spin" : ""}`} />
+                  <span>Refresh ClickHouse Analytics</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Empty State vs Live Analytics */}
+          {!analytics?.rollups || analytics.rollups.length === 0 ? (
+            <div className="cinema-card rounded-2xl p-12 text-center space-y-4 border border-white/10">
+              <Layers className="w-10 h-10 text-cyan-400 mx-auto" />
+              <h3 className="text-xl font-bold text-gray-200">No Published Telemetry in ClickHouse Yet</h3>
+              <p className="text-sm text-gray-400 max-w-lg mx-auto">
+                Audience engagement events stream into ClickHouse when items are published. Open the <strong>Campaign Calendar</strong> and click <strong>"Publish (Simulated)"</strong> on any scheduled asset to stream realistic event fixtures into ClickHouse.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href={`/campaign/${briefId}/calendar`}
+                  className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all"
+                >
+                  <Calendar className="w-4 h-4 text-amber-300" />
+                  <span>Go to Campaign Calendar</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Pre-Aggregated Rollup Table */}
+              <div className="cinema-card rounded-2xl p-6 border border-white/10 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-white/10 pb-4">
+                  <div>
+                    <h3 className="text-base font-black uppercase text-white tracking-wide flex items-center gap-2">
+                      <Database className="w-4 h-4 text-cyan-400" />
+                      <span>Pre-Aggregated Materialized View Rollup (`campaign_rollup`)</span>
+                    </h3>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      Target table: <code>campaign_rollup</code> · Engine: <code>AggregatingMergeTree</code> · Zero raw table scans at query time
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 px-2.5 py-1 rounded-full self-start md:self-auto font-bold">
+                    Zero Raw Scans
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead>
+                      <tr className="border-b border-white/10 text-gray-400 uppercase tracking-wider">
+                        <th className="py-3 px-3">Item / Asset</th>
+                        <th className="py-3 px-3">Platform</th>
+                        <th className="py-3 px-3 text-right">Impressions</th>
+                        <th className="py-3 px-3 text-right">Completes</th>
+                        <th className="py-3 px-3 text-right">Likes</th>
+                        <th className="py-3 px-3 text-right">Clicks</th>
+                        <th className="py-3 px-3 text-right">Eng. Rate</th>
+                        <th className="py-3 px-3 text-center">Conversion Funnel</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {analytics.rollups.map((item: any) => {
+                        const engRate = item.impressions > 0 ? ((item.likes / item.impressions) * 100).toFixed(2) : "0.00";
+                        const isSelected = selectedFunnelItemId === item.item_id;
+                        return (
+                          <tr
+                            key={item.item_id}
+                            className={`hover:bg-white/5 transition-colors ${
+                              isSelected ? "bg-cyan-950/20 border-l-2 border-cyan-400" : ""
+                            }`}
+                          >
+                            <td className="py-3 px-3 font-bold text-white">
+                              {item.item_id.slice(0, 8)}...
+                            </td>
+                            <td className="py-3 px-3 text-gray-300">
+                              <span className="bg-neutral-800 px-2 py-0.5 rounded text-gray-300">
+                                {item.platform}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-right text-white font-bold">
+                              {Number(item.impressions).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-3 text-right text-gray-300">
+                              {Number(item.completes).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-3 text-right text-amber-400 font-bold">
+                              {Number(item.likes).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-3 text-right text-cyan-400 font-bold">
+                              {Number(item.clicks).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-3 text-right text-emerald-400 font-bold">
+                              {engRate}%
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <button
+                                onClick={() => {
+                                  setSelectedFunnelItemId(item.item_id);
+                                  loadAnalytics(item.item_id);
+                                }}
+                                className={`px-2.5 py-1 rounded text-[11px] font-bold uppercase transition-all ${
+                                  isSelected
+                                    ? "bg-cyan-600 text-white"
+                                    : "bg-neutral-800 hover:bg-neutral-700 text-gray-300"
+                                }`}
+                              >
+                                {isSelected ? "Active" : "Inspect Funnel"}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Sequential windowFunnel Visualization */}
+              <div className="cinema-card rounded-2xl p-6 border border-white/10 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <h3 className="text-base font-black uppercase text-white tracking-wide flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-emerald-400" />
+                      <span>ClickHouse windowFunnel(3600) Viewer Progression</span>
+                    </h3>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      Sequential 1-hour session-level window funnel: <code>Reached → Watched → Engaged → Clicked</code>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400 font-mono">Cut:</span>
+                    <select
+                      value={selectedFunnelItemId}
+                      onChange={(e) => {
+                        const newId = e.target.value;
+                        setSelectedFunnelItemId(newId);
+                        loadAnalytics(newId);
+                      }}
+                      className="bg-neutral-900 border border-white/20 rounded-lg px-3 py-1 text-xs font-mono text-white focus:outline-none focus:border-cyan-500"
+                    >
+                      {analytics.rollups.map((r: any) => (
+                        <option key={r.item_id} value={r.item_id}>
+                          {r.platform} ({r.item_id.slice(0, 8)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Funnel Stage Bars */}
+                {(() => {
+                  const f = analytics.funnel || { reached: 0, watched: 0, engaged: 0, clicked: 0 };
+                  const maxVal = Math.max(f.reached, 1);
+                  const reachedPct = 100;
+                  const watchedPct = f.reached > 0 ? ((f.watched / f.reached) * 100).toFixed(1) : "0.0";
+                  const engagedPct = f.reached > 0 ? ((f.engaged / f.reached) * 100).toFixed(1) : "0.0";
+                  const clickedPct = f.reached > 0 ? ((f.clicked / f.reached) * 100).toFixed(1) : "0.0";
+
+                  const stages = [
+                    {
+                      label: "Stage 1 · Reached",
+                      condition: "kind = 'impression'",
+                      count: f.reached,
+                      pct: `${reachedPct}%`,
+                      barWidth: 100,
+                      color: "from-blue-600 to-cyan-500",
+                      badge: "100% of Reach",
+                    },
+                    {
+                      label: "Stage 2 · Watched",
+                      condition: "kind = 'complete'",
+                      count: f.watched,
+                      pct: `${watchedPct}%`,
+                      barWidth: Math.max((f.watched / maxVal) * 100, 4),
+                      color: "from-cyan-600 to-teal-500",
+                      badge: `${watchedPct}% Retention`,
+                    },
+                    {
+                      label: "Stage 3 · Engaged",
+                      condition: "kind = 'like'",
+                      count: f.engaged,
+                      pct: `${engagedPct}%`,
+                      barWidth: Math.max((f.engaged / maxVal) * 100, 4),
+                      color: "from-teal-600 to-emerald-500",
+                      badge: `${engagedPct}% Engagement`,
+                    },
+                    {
+                      label: "Stage 4 · Clicked",
+                      condition: "kind = 'click'",
+                      count: f.clicked,
+                      pct: `${clickedPct}%`,
+                      barWidth: Math.max((f.clicked / maxVal) * 100, 4),
+                      color: "from-amber-600 to-red-500",
+                      badge: `${clickedPct}% Conversion`,
+                    },
+                  ];
+
+                  return (
+                    <div className="space-y-4">
+                      {stages.map((stage, idx) => (
+                        <div key={stage.label} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs font-mono">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-white uppercase">{stage.label}</span>
+                              <span className="text-gray-500 text-[10px]">({stage.condition})</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-white">{Number(stage.count).toLocaleString()} viewers</span>
+                              <span className="bg-neutral-800 text-gray-300 px-2 py-0.5 rounded text-[10px] font-bold">
+                                {stage.badge}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="h-4 bg-black/60 rounded-full overflow-hidden p-0.5 border border-white/10">
+                            <div
+                              className={`h-full rounded-full bg-gradient-to-r ${stage.color} transition-all duration-500`}
+                              style={{ width: `${stage.barWidth}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="mt-4 p-3 bg-neutral-900/80 rounded-xl border border-white/10 text-xs font-mono text-gray-400 space-y-1">
+                        <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>ClickHouse Engine Call Signature</span>
+                        </div>
+                        <p className="text-[11px] text-gray-300">
+                          <code>SELECT windowFunnel(3600)(toDateTime(ts), kind='impression', kind='complete', kind='like', kind='click') AS lvl FROM campaign_events WHERE brief_id='{briefId}' AND item_id='{selectedFunnelItemId}' GROUP BY session_id</code>
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

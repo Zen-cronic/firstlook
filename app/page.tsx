@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-[#0a0a0c] space-y-10">
+    <div className="space-y-10">
       {/* Hero Banner */}
       <div className="relative rounded-2xl overflow-hidden cinema-card p-10 bg-gradient-to-r from-neutral-900 via-neutral-950 to-red-950/40 border border-white/10 shadow-2xl">
         <div className="max-w-3xl space-y-4">
