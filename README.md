@@ -96,6 +96,23 @@ flowchart TD
 | **High-Volume Event Stream Ingestion** | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) | Ingests thousands of impression, click, complete, and like events per campaign item into ClickHouse Cloud via `mcp-clickhouse` (`CLICKHOUSE_ALLOW_WRITE_ACCESS=true`). |
 | **Data-Grounded LLM Revision Loop** | [`lib/revise.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/revise.ts) | Feeds real ClickHouse median/p90 trailer benchmark data and rollup metrics into Gemini 3.6/3.8 Flash to adversarially reason against real market performance and rewrite underperforming post copy. |
 
+### 🧠 ClickHouse Agent Skills Integration (Sponsor-Encouraged)
+
+Per the official Devpost hackathon rules (*"Use of ClickHouse Agent Skills during development is optional but encouraged"*), the FirstLook engineering workflow integrates the official **[`clickhouse/agent-skills`](https://github.com/ClickHouse/agent-skills)** suite under `.agents/skills/`. Our schemas, queries, and pipelines directly implement the validated rules:
+
+| Agent Skill Rule | Implementation in FirstLook | File Citation |
+|---|---|---|
+| **`agent-connect-mcp`** | Official stdio JSON-RPC transport via `uvx mcp-clickhouse` with zero-credential prompting and automated environment discovery. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`query-mv-incremental`** | Real-time rollups using `AggregatingMergeTree` and `SimpleAggregateFunction(sum, UInt64)` with `sumSimpleState` and `sumMerge` for zero-raw-scan reads. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`decision-real-time-preaggregation`** | Dual-path architectural design: hot dashboard paths query pre-aggregated rollup MVs with graceful fallback to raw event queries. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`agent-query-safety`** | Explicit execution time and row boundaries on all agent queries: `SETTINGS max_execution_time = 30, timeout_before_checking_execution_speed = 0` on 4.56B scans, and `max_execution_time = 15, LIMIT 100` on telemetry dashboards. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`query-index-skipping-indices`** | Secondary index `INDEX idx_session_id session_id TYPE bloom_filter GRANULARITY 4` on `campaign_events` to accelerate non-ORDER BY session lookups and `windowFunnel` filtering. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`schema-types-lowcardinality`** | `platform LowCardinality(String)` to minimize string memory bloat and optimize group-by dictionary execution. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`schema-types-enum`** | `kind Enum8('impression'=1, 'like'=2, 'click'=3, 'complete'=4)` for compact 1-byte storage of event action taxonomies. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`schema-types-avoid-nullable`** | Zero `Nullable` columns in `campaign_events` and `campaign_rollup`; explicit `DEFAULT 1` and `DEFAULT now64(3)` to eliminate null-map masks and boost vector execution. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`schema-pk-cardinality-order`** | Primary key ordered from lowest to highest cardinality: `ORDER BY (brief_id, item_id, ts)` to maximize index pruning across granules. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+| **`insert-batch-size`** | Batch size set to 1,000 rows (`batchSize = 1000`) to avoid tiny part fragmentation and merge saturation. | [`lib/clickhouse-mcp.ts`](file:///home/zin-kg/code/hackathons/agentic-cinema-2026/firstlook/lib/clickhouse-mcp.ts) |
+
 ---
 
 ## 🛠️ Stack & Technology

@@ -38,6 +38,8 @@ next-env.d.ts
 # agent skills & local checkpoints
 .agents/
 .gemini/
+agent/
+skills-lock.json
 BUILD_CHECKPOINT.md
 
 # demo & submission docs (local-only / untracked)
